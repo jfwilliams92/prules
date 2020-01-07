@@ -2,7 +2,7 @@ A simple implementation of a rules engine with a JSON backend.
 
 Example:
 
-`
+```
 eng = JSONEvaluationEngine("evaluate.json")
 
 
@@ -15,4 +15,4 @@ payload_test = {
 
 eng.evaluate(payload_test, verbose=True)
 #prints True
-`
+```
