@@ -1,7 +1,8 @@
 import operator
+import json
 
 class Evaluation():
-    def __init__(self, field, value, operator_str, verbose=True):
+    def __init__(self, field, value, operator_str):
 
         operators = {
             "lt": operator.lt,
@@ -20,24 +21,22 @@ class Evaluation():
         self.field_ = field
         self.value_ = value
         self.op_str_ = operator_str
-        self.verbose_ = verbose
 
-    def evaluate(self, payload, level=0):
+    def evaluate(self, payload, level=0, verbose=True):
         
         field_value_ = payload[self.field_]
         
-        if self.verbose_:
+        if verbose:
             tabs = "\t" * level
             print(tabs + f"Evaluating {field_value_} {self.op_str_} {self.value_}")
         
         result = self.func_(field_value_, self.value_)
-        if self.verbose_: print(tabs + f"Evaluation Result: {result}")
+        if verbose: print(tabs + f"Evaluation Result: {result}")
         
         return result
 
-
 class Composite():
-    def __init__(self, children, conjuction='AND', verbose=True):
+    def __init__(self, children, conjuction='AND'):
         
         if conjuction not in ['AND', 'OR']:
             raise ValueError('Conjuction must be a valid value.')
@@ -47,21 +46,20 @@ class Composite():
         
         self.conjuction_ = conjuction
         self.children_ = children
-        self.verbose_ = verbose
 
-    def evaluate(self, payload, level=0):
+    def evaluate(self, payload, level=0, verbose=True):
 
         if self.conjuction_ == 'AND':
             result = True
             i = 0
             while result and (i < len(self.children_)):
                 
-                if self.verbose_:
+                if verbose:
                     tabs = "\t" * level
                     if i > 0: print("\n" + tabs + f"{self.conjuction_} \n")
                     print(tabs + f"Evaluating Composite: {i + 1}, Level: {level + 1}")
                 
-                result = self.children_[i].evaluate(payload, level + 1)
+                result = self.children_[i].evaluate(payload, level + 1, verbose=verbose)
                 i += 1
 
         else:
@@ -69,38 +67,46 @@ class Composite():
             i = 0
             while result == False and (i < len(self.children_)):
                 
-                if self.verbose_:
+                if verbose:
                     tabs = "\t" * level
                     if i > 0: print("\n" + tabs + f"{self.conjuction_} \n")
                     print(tabs + f"Evaluating Composite: {i + 1}, Level: {level + 1}")
                 
-                result = self.children_[i].evaluate(payload, level + 1)
+                result = self.children_[i].evaluate(payload, level + 1, verbose=verbose)
                 i += 1
 
-        if self.verbose_: 
+        if verbose: 
             tabs = "\t" * level
-            print(tabs + f"Composite Result: {result}")
+            print("\n" + tabs + f"Composite Result: {result}")
 
         return result
 
+class JSONEvaluationEngine():
+    
+    def __init__(self, json_path, verbose=True):
+        with open(json_path) as f:
+            self.json_ = json.load(f)
 
-# RecallDate IS NULL
-eval1 = Evaluation("RecallDate", "NULL", 'eq')
-# Days Since Placement >= 60
-eval2 = Evaluation("DaysSincePlacement", 60, 'ge')
+        self.composite_ = self.build_engine(self.json_)
 
-# OR
+    def build_engine(self, children, verbose=True):
+        comp_children = []
+        if verbose: print(f"calling build_engine with {children}")
+        for child in children:
+            if child.get('field'):
+                comp_children.append(Evaluation(child['field'], child['value'], child['operator']))
+            else:
+                new_children = child.get('children')
+                conj = child.get('conjuction')
+                return Composite(self.build_engine(new_children), conjuction=conj)
+    
+        return comp_children
 
-# RecallDate IS NOT NULL
-eval3 = Evaluation("RecallDate", "NULL", 'ne')
-# DaysSincePlacement >= 170
-eval4 = Evaluation("DaysSincePlacement", 170, 'ge')
+    def evaluate(self, payload, verbose=True):
+        return self.composite_.evaluate(payload, verbose=verbose)
 
 
-c1 = Composite([eval1, eval2], conjuction='AND')
-c2 = Composite([eval3, eval4], conjuction='AND')
-
-c3 = Composite([c1, c2], conjuction='OR')
+eng = JSONEvaluationEngine("evaluate.json")
 
 
 payload_test = {
@@ -113,4 +119,4 @@ payload_test_2 = {
     "DaysSincePlacement": 31
 }
 
-c3.evaluate(payload_test_2)
+eng.evaluate(payload_test_2, verbose=True)

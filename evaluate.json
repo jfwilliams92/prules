@@ -1,0 +1,17 @@
+[
+    {
+        "children": [
+            {
+                "field": "DaysSincePlacement",
+                "value": 31,
+                "operator": "le"
+            },
+            {
+                "field": "RecallDate",
+                "value": "NULL",
+                "operator": "eq"
+            }
+        ],
+        "conjuction": "AND"
+    }
+]
