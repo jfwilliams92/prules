@@ -2,9 +2,19 @@
     {
         "children": [
             {
-                "field": "DaysSincePlacement",
-                "value": 31,
-                "operator": "le"
+                "children": [
+                    {
+                        "field": "DaysSincePlacement",
+                        "value": 31,
+                        "operator": "le"
+                    },
+                    {
+                        "field": "MoneyInTheBank",
+                        "value": 500.0,
+                        "operator": "ge"
+                    }
+                ],
+                "conjuction": "OR"
             },
             {
                 "field": "RecallDate",
