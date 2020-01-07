@@ -87,20 +87,21 @@ class JSONEvaluationEngine():
         with open(json_path) as f:
             self.json_ = json.load(f)
 
-        self.composite_ = self.build_engine(self.json_)
+        self.composite_ = self.build_engine(self.json_, conjunction='AND')
 
-    def build_engine(self, children, verbose=True):
+    def build_engine(self, children, conjunction, verbose=True):
         comp_children = []
         if verbose: print(f"calling build_engine with {children}")
-        for child in children:
+        for child in children:        
             if child.get('field'):
                 comp_children.append(Evaluation(child['field'], child['value'], child['operator']))
+                print(comp_children)
             else:
                 new_children = child.get('children')
                 conj = child.get('conjuction')
-                return Composite(self.build_engine(new_children), conjuction=conj)
+                comp_children.append(self.build_engine(new_children, conjunction=conj))
     
-        return comp_children
+        return Composite(comp_children, conjuction=conjunction)
 
     def evaluate(self, payload, verbose=True):
         return self.composite_.evaluate(payload, verbose=verbose)
@@ -111,7 +112,9 @@ eng = JSONEvaluationEngine("evaluate.json")
 
 payload_test = {
     "RecallDate": "NULL",
-    "DaysSincePlacement": 75
+    "DaysSincePlacement": 75,
+    "MoneyInTheBank": 509.0,
+    "DaysTillPayDay": 22
 }
 
 payload_test_2 = {
@@ -119,4 +122,4 @@ payload_test_2 = {
     "DaysSincePlacement": 31
 }
 
-eng.evaluate(payload_test_2, verbose=True)
+eng.evaluate(payload_test, verbose=True)

@@ -20,6 +20,11 @@
                 "field": "RecallDate",
                 "value": "NULL",
                 "operator": "eq"
+            },
+            {
+                "field": "DaysTillPayDay",
+                "value": 25,
+                "operator": "lt"
             }
         ],
         "conjuction": "AND"
