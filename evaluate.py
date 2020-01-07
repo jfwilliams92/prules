@@ -107,19 +107,4 @@ class JSONEvaluationEngine():
         return self.composite_.evaluate(payload, verbose=verbose)
 
 
-eng = JSONEvaluationEngine("evaluate.json")
 
-
-payload_test = {
-    "RecallDate": "NULL",
-    "DaysSincePlacement": 75,
-    "MoneyInTheBank": 509.0,
-    "DaysTillPayDay": 22
-}
-
-payload_test_2 = {
-    "RecallDate": "NULL",
-    "DaysSincePlacement": 31
-}
-
-eng.evaluate(payload_test, verbose=True)
