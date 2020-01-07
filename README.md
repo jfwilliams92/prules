@@ -1,4 +1,5 @@
 A simple implementation of a rules engine with a JSON backend.
+Inspired by huttotw's <a href="https://github.com/huttotw/grules"> grules </a>
 
 Example:
 
