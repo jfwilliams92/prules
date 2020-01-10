@@ -1,5 +1,8 @@
 import operator
 import json
+import operators as custom_op
+
+# TODO add XOR conjuction
 
 class Evaluation():
     """The simplest logical unit in an evaluation.
@@ -20,11 +23,15 @@ class Evaluation():
             "ne": operator.ne,
             "ge": operator.ge,
             "gt": operator.gt,
-            "in": operator.contains
+            "contains": operator.contains,
+            "not contains": custom_op.not_contains,
+            "in": custom_op.in_,
+            "not in": custom_op.not_in,
+            "regex match": custom_op.re_contains
         }
 
         if operator_str not in operators.keys():
-            raise ValueError('Operator must be a valid value.')
+            raise ValueError(f'Operator must be a valid value. {operator_str} is not valid.')
 
         self.func_ = operators[operator_str]
         self.field_ = field
@@ -43,7 +50,9 @@ class Evaluation():
             result (bool): T/F of evaluation
         """
         # find the value to compare in the payload dict
-        field_value_ = payload[self.field_]
+        field_value_ = payload.get(self.field_)
+        if not field_value_:
+            raise ValueError(f'Required field {self.field_} not in payload.')
         
         if verbose:
             tabs = "\t" * level
