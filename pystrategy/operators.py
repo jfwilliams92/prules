@@ -1,6 +1,3 @@
-# TODO 
-# Create custom comparison operators not present in stdlib operator module
-
 import re
 
 def between(a, b):
@@ -10,6 +7,14 @@ def between(a, b):
         raise ValueError('other value must be a list of length 2')
     
     return b[0] <= a <= b[1]
+
+def not_between(a, b):
+    if not isinstance(b, list):
+        raise ValueError('other value must be a list of length 2')
+
+    result = b[0] <= a <= b[1]
+
+    return False if result else True
 
 def in_(a, b):
     return a in b
