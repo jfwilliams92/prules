@@ -28,7 +28,7 @@
             },
             {
                 "field": "OffersSent",
-                "value": "PIFPlan",
+                "value": "10 OFF",
                 "operator": "not contains"
             },
             {
