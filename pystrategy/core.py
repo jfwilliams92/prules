@@ -137,9 +137,9 @@ class Composite():
                     if i > 0: print("\n" + tabs + f"{self.conjuction_} \n")
                     print(tabs + f"Evaluating Composite: {i + 1}, Level: {level + 1}")
                     
-                    # += a boolean is equivalent to += 1 for T and += 0 for False
-                    true_count += self.children_[i].evaluate(payload, level + 1, verbose=verbose)
-                    i += 1
+                # += a boolean is equivalent to += 1 for T and += 0 for False
+                true_count += self.children_[i].evaluate(payload, level + 1, verbose=verbose)
+                i += 1
 
             if true_count == 1:
                 result = True
@@ -176,7 +176,10 @@ class JSONEvaluationEngine():
         with open(json_path) as f:
             self.json_ = json.load(f)
 
-        self.composite_ = self.build_engine(self.json_, conjunction='AND')
+        first_children = self.json_[0]['children']
+        first_conj = self.json_[0]['conjuction']
+
+        self.composite_ = self.build_engine(first_children, conjunction=first_conj)
 
     def build_engine(self, children, conjunction, verbose=True):
         """Recursively joins all logical components into a master composite.
@@ -195,7 +198,7 @@ class JSONEvaluationEngine():
         for child in children:        
             if child.get('field'):
                 comp_children.append(Evaluation(child['field'], child['value'], child['operator']))
-                print(comp_children)
+                #print(comp_children)
             else:
                 new_children = child.get('children')
                 conj = child.get('conjuction')
