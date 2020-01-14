@@ -186,13 +186,12 @@ class JSONEvaluationEngine():
 
         Args:
             children (list): list of logical children, either Evaluations or Composites.
-            conjuction (str): one of {'AND', 'OR'} - how to logically join children.
+            conjuction (str): one of {'AND', 'OR', 'XOR'} - how to logically join children.
             verbose (bool): whether to print intermediate steps of composite build.
 
         Returns:
             composite (Composite): composite of logical children.
         """
-        # TODO - extra recursion taking place in here somewhere
         comp_children = []
         if verbose: print(f"calling build_engine with {children}")
         for child in children:        
