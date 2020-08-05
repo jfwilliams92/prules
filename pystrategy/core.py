@@ -31,9 +31,9 @@ class Evaluation():
         }
 
         if operator_str not in operators.keys():
-            raise ValueError(f"Operator must be a valid value. '{operator_str}' is not valid.")
+            raise ValueError(f"Operator must be a valid value. '{operator_str}' is not valid. Valid operators are: {list(operators.keys())}")
 
-        self.func_ = operators[operator_str]
+        self.func_ = operators[operator_str] # functions are first class objects and can be passed around
         self.field_ = field
         self.value_ = value
         self.op_str_ = operator_str
@@ -66,18 +66,19 @@ class Evaluation():
 
 class Composite():
     """A logical composite made of children evaluations joined by logical
-    OR or AND or XOR (conjunction). Children evaluations can be Composites themselves,
+    OR or AND or NOR or XOR or NAND (conjunction). Children evaluations can be Composites
     or Evaluations.
 
     Attributes:
-        conjuction_ (str): Logical AND or OR or XOR
+        conjuction_ (str): Logical AND or OR or NOR or XOR or NAND
         children_ (list): list of logical children
     """
 
     def __init__(self, children, conjuction='AND'):
         
-        if conjuction not in ['AND', 'OR', 'XOR']:
-            raise ValueError(f"Conjuction must be a valid value. '{conjuction}' is not valid.")
+        valid_conjunctions = ['AND', 'OR', 'NOR', 'XOR', 'NAND']
+        if conjuction not in valid_conjunctions:
+            raise ValueError(f"Conjuction must be a valid value. '{conjuction}' is not valid. Valid conjuctions are: {valid_conjunctions}.")
 
         if not isinstance(children, list):
             raise ValueError('Children must be a list, empty or otherwise.')
@@ -99,7 +100,7 @@ class Composite():
 
         # if children are joined by AND, evaluate every child until all children
         # are evaluated or until a False breaks the loop (Need all True for AND)
-        if self.conjuction_ == 'AND':
+        if self.conjuction_ in ['AND', 'NAND']:
             result = True
             i = 0
             while result and (i < len(self.children_)):
@@ -111,10 +112,13 @@ class Composite():
                 
                 result = self.children_[i].evaluate(payload, level + 1, verbose=verbose)
                 i += 1
+            if self.conjunction == 'NAND':
+                result = not result
+
 
         # if children are joined by OR, evaluate every child until all children
         # are evaluated or until a True breaks the loop (only need 1 True for OR)
-        elif self.conjuction_ == 'OR':
+        elif self.conjuction_ in ['OR', 'NOR']:
             result = False
             i = 0
             while result == False and (i < len(self.children_)):
@@ -126,6 +130,8 @@ class Composite():
                 
                 result = self.children_[i].evaluate(payload, level + 1, verbose=verbose)
                 i += 1
+            if self.conjuction_ == 'NOR':
+                result = not result
 
         # XOR evaluation - 1 and only 1 can be True. Have to iterate over all children unless the number of trues becomes greater than 1
         else:
