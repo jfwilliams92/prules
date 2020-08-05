@@ -4,14 +4,14 @@ def between(a, b):
     """Evaluates a between b[0] and b[1]"""
     # since reading from JSON, values are either string, float, or list of values
     if not isinstance(b, list):
-        raise ValueError('other value must be a list of length 2')
+        raise TypeError('other value must be a list of length 2')
     
     return b[0] <= a <= b[1]
 
 def not_between(a, b):
     """Evaluates a not between b[0] and b[1]"""
     if not isinstance(b, list):
-        raise ValueError('other value must be a list of length 2')
+        raise TypeError('other value must be a list of length 2')
 
     result = b[0] <= a <= b[1]
     return False if result else True
@@ -20,7 +20,7 @@ def in_(a, b):
     return a in b
 
 def not_in(a, b):
-    """Evalutes a not in b""""
+    """Evalutes a not in b"""
     result = False if a in b else True
     return result
 
