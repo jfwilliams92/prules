@@ -64,6 +64,10 @@ class Evaluation():
         
         return result
 
+    def pretty_print(self, level=0):
+        tabs = "\t" * level
+        print(tabs + f"{self.field_}: Payload Value {self.op_str_} {self.value_}")
+
 class Composite():
     """A logical composite made of children evaluations joined by logical
     OR or AND or NOR or XOR or NAND (conjunction). Children evaluations can be Composites
@@ -108,7 +112,8 @@ class Composite():
                 if verbose:
                     tabs = "\t" * level
                     if i > 0: print("\n" + tabs + f"{self.conjunction_} \n")
-                    print(tabs + f"Evaluating Composite: {i + 1}, Level: {level + 1}")
+                    child_print = 'Composite' if isinstance(self.children_[i], Composite) else 'Evaluation'
+                    print(tabs + f"Evaluating Child {i + 1}, Level {level + 1} - {child_print}")
                 
                 result = self.children_[i].evaluate(payload, level + 1, verbose=verbose)
                 i += 1
@@ -126,7 +131,8 @@ class Composite():
                 if verbose:
                     tabs = "\t" * level
                     if i > 0: print("\n" + tabs + f"{self.conjunction_} \n")
-                    print(tabs + f"Evaluating Composite: {i + 1}, Level: {level + 1}")
+                    child_print = 'Composite' if isinstance(self.children_[i], Composite) else 'Evaluation'
+                    print(tabs + f"Evaluating Child {i + 1}, Level {level + 1} - {child_print}")
                 
                 result = self.children_[i].evaluate(payload, level + 1, verbose=verbose)
                 i += 1
@@ -141,7 +147,8 @@ class Composite():
                 if verbose:
                     tabs = "\t" * level
                     if i > 0: print("\n" + tabs + f"{self.conjunction_} \n")
-                    print(tabs + f"Evaluating Composite: {i + 1}, Level: {level + 1}")
+                    child_print = 'Composite' if isinstance(self.children_[i], Composite) else 'Evaluation'
+                    print(tabs + f"Evaluating Child {i + 1}, Level {level + 1} - {child_print}")
                     
                 # += a boolean is equivalent to += 1 for T and += 0 for False
                 true_count += self.children_[i].evaluate(payload, level + 1, verbose=verbose)
@@ -157,6 +164,18 @@ class Composite():
             print("\n" + tabs + f"Composite Result: {result}")
 
         return result
+
+    def pretty_print(self, level=0):
+            
+        tabs = "\t" * level
+
+        for i, child in enumerate(self.children_):
+            if i > 0: print("\n" + tabs + f"{self.conjunction_} \n")
+            child_print = 'Composite' if isinstance(child, Composite) else 'Evaluation'
+            print(tabs + f"Child {i + 1}, Level {level + 1} - {child_print}")
+
+            child.pretty_print(level + 1)
+
 
 class JSONEvaluationEngine():
     """Engine builds the logical components from a properly formatted
@@ -268,9 +287,6 @@ class JSONEvaluationEngine():
 
         return composite_.evaluate(payload, verbose=verbose)
 
-
-    #def pretty_print(self):
-    #    pass
-
-    #def __repr__(self):
-    #    self.pretty_print()
+    def pretty_print(self):
+        print("JSON Evaluation Engine Logical Components: \n")
+        self.composite_.pretty_print()
