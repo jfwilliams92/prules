@@ -1,0 +1,54 @@
+{
+    "children": [
+        {
+            "children": [
+                {
+                    "field": "DaysSincePlacement",
+                    "value": 31,
+                    "operator": "le"
+                },
+                {
+                    "field": "MoneyInTheBank",
+                    "value": 500.0,
+                    "operator": "ge"
+                }
+            ],
+            "conjunction": "OR"
+        },
+        {
+            "field": "RecallDate",
+            "value": "NULL",
+            "operator": "eq"
+        },
+        {
+            "field": "DaysTillPayDay",
+            "value": [21, 55],
+            "operator": "between"
+        },
+        {
+            "field": "OffersSent",
+            "value": "10 OFF",
+            "operator": "not contains"
+        },
+        {
+            "children":[
+                {
+                    "field": "DaysBeforeBirthday",
+                    "value": [1,2,6,9,22],
+                    "operator": "in"
+                },
+                {
+                    "field": "TimeSinceLastDiscountOffer",
+                    "value": [1, 2, 3, 4, 5],
+                    "operator": "not in"
+                },
+                {
+                    "field":"DaysSincePlacement",
+                    "value":[12, 78],
+                    "operator":"between"
+                }                ],
+            "conjunction": "XOR"
+        }
+    ],
+    "conjunction": "AND"
+}
