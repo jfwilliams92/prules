@@ -56,7 +56,7 @@ class Evaluation():
         
         if verbose:
             tabs = "\t" * level
-            print(tabs + f"Evaluating {field_value_} {self.op_str_} {self.value_}")
+            print(tabs + f"Evaluating {self.field_}: {field_value_} {self.op_str_} {self.value_}")
         
         # run the comparison operation based on the initialzed operator
         result = self.func_(field_value_, self.value_)
@@ -70,20 +70,20 @@ class Composite():
     or Evaluations.
 
     Attributes:
-        conjuction_ (str): Logical AND or OR or NOR or XOR or NAND
+        conjunction_ (str): Logical AND or OR or NOR or XOR or NAND
         children_ (list): list of logical children
     """
 
-    def __init__(self, children, conjuction='AND'):
+    def __init__(self, children, conjunction='AND'):
         
         valid_conjunctions = ['AND', 'OR', 'NOR', 'XOR', 'NAND']
-        if conjuction not in valid_conjunctions:
-            raise ValueError(f"Conjuction must be a valid value. '{conjuction}' is not valid. Valid conjuctions are: {valid_conjunctions}.")
+        if conjunction not in valid_conjunctions:
+            raise ValueError(f"conjunction must be a valid value. '{conjunction}' is not valid. Valid conjunctions are: {valid_conjunctions}.")
 
         if not isinstance(children, list):
             raise ValueError('Children must be a list, empty or otherwise.')
         
-        self.conjuction_ = conjuction
+        self.conjunction_ = conjunction
         self.children_ = children
 
     def evaluate(self, payload, level=0, verbose=True):
@@ -100,37 +100,37 @@ class Composite():
 
         # if children are joined by AND, evaluate every child until all children
         # are evaluated or until a False breaks the loop (Need all True for AND)
-        if self.conjuction_ in ['AND', 'NAND']:
+        if self.conjunction_ in ['AND', 'NAND']:
             result = True
             i = 0
             while result and (i < len(self.children_)):
                 
                 if verbose:
                     tabs = "\t" * level
-                    if i > 0: print("\n" + tabs + f"{self.conjuction_} \n")
+                    if i > 0: print("\n" + tabs + f"{self.conjunction_} \n")
                     print(tabs + f"Evaluating Composite: {i + 1}, Level: {level + 1}")
                 
                 result = self.children_[i].evaluate(payload, level + 1, verbose=verbose)
                 i += 1
-            if self.conjunction == 'NAND':
+            if self.conjunction_ == 'NAND':
                 result = not result
 
 
         # if children are joined by OR, evaluate every child until all children
         # are evaluated or until a True breaks the loop (only need 1 True for OR)
-        elif self.conjuction_ in ['OR', 'NOR']:
+        elif self.conjunction_ in ['OR', 'NOR']:
             result = False
             i = 0
             while result == False and (i < len(self.children_)):
                 
                 if verbose:
                     tabs = "\t" * level
-                    if i > 0: print("\n" + tabs + f"{self.conjuction_} \n")
+                    if i > 0: print("\n" + tabs + f"{self.conjunction_} \n")
                     print(tabs + f"Evaluating Composite: {i + 1}, Level: {level + 1}")
                 
                 result = self.children_[i].evaluate(payload, level + 1, verbose=verbose)
                 i += 1
-            if self.conjuction_ == 'NOR':
+            if self.conjunction_ == 'NOR':
                 result = not result
 
         # XOR evaluation - 1 and only 1 can be True. Have to iterate over all children unless the number of trues becomes greater than 1
@@ -140,7 +140,7 @@ class Composite():
             while true_count < 2 and (i < len(self.children_)):
                 if verbose:
                     tabs = "\t" * level
-                    if i > 0: print("\n" + tabs + f"{self.conjuction_} \n")
+                    if i > 0: print("\n" + tabs + f"{self.conjunction_} \n")
                     print(tabs + f"Evaluating Composite: {i + 1}, Level: {level + 1}")
                     
                 # += a boolean is equivalent to += 1 for T and += 0 for False
@@ -160,16 +160,39 @@ class Composite():
 
 class JSONEvaluationEngine():
     """Engine builds the logical components from a properly formatted
-    JSON backend and implements an evaluate() method.
+        JSON backend.
+        evaluate() method is implemented for prebuilt engines, and 
+        dynamic_evaluate() method is implemented for engines that receive both payload and JSON in the 
+        same call.
     
     Attributes:
-        composite_ (Composite): master composite of all logical components
-        json_ (dict): dictionary of backend JSON
+        prebuilt_ (bool): indicates whether engine is prebuilt or dynamic
+        composite_ (Composite): master composite of all logical components, if prebuilt
     
     """
 
-    def __init__(self, json_path, verbose=True):
-        """Initializes the engine by building the master composite.
+    def __init__(self, json_path=None, verbose=True):
+        """Initializes the engine instance. Engine can be prebuilt, offering evaluation
+        based on a particular JSON backend, or can be dynamic, building new logical components
+        with each call.
+
+        Args:
+            prebuilt (bool): whether to prebuild engine with JSON backend
+            json_path (str): path to JSON backend, optional
+            verbose (bool): whether to print intermediate steps of composite build.
+        
+        Returns:
+            None
+        """
+
+        if json_path:
+            self.composite_ = self.build_engine_from_json(json_path=json_path, verbose=verbose)
+            self.prebuilt_ = True
+        else:
+            self.prebuilt_ = False
+
+    def build_engine_from_json(self, json_path, verbose=True):
+        """Constructs the logical components of the engine from JSON file
 
         Args:
             json_path (str): path to JSON backend
@@ -178,38 +201,41 @@ class JSONEvaluationEngine():
         Returns:
             None
         """
+        # TODO JSON schema validation 
 
         with open(json_path) as f:
-            self.json_ = json.load(f)
+            json_ = json.load(f)
 
-        first_children = self.json_[0]['children']
-        first_conj = self.json_[0]['conjuction']
+        first_children = json_['children']
+        first_conj = json_['conjunction']
 
-        self.composite_ = self.build_engine(first_children, conjunction=first_conj)
+        composite_ = self.build_engine(children=first_children, conjunction=first_conj, verbose=verbose)
+
+        return composite_
 
     def build_engine(self, children, conjunction, verbose=True):
         """Recursively joins all logical components into a master composite.
 
         Args:
             children (list): list of logical children, either Evaluations or Composites.
-            conjuction (str): one of {'AND', 'OR', 'XOR'} - how to logically join children.
+            conjunction (str): one of {'AND', 'OR', 'NOR', 'XOR', 'NAND'} - how to logically join children.
             verbose (bool): whether to print intermediate steps of composite build.
 
         Returns:
             composite (Composite): composite of logical children.
         """
         comp_children = []
-        if verbose: print(f"calling build_engine with {children}")
+        if verbose: print(f"\nCalling build_engine with {children}")
         for child in children:        
             if child.get('field'):
                 comp_children.append(Evaluation(child['field'], child['value'], child['operator']))
                 #print(comp_children)
             else:
                 new_children = child.get('children')
-                conj = child.get('conjuction')
+                conj = child.get('conjunction')
                 comp_children.append(self.build_engine(new_children, conjunction=conj))
     
-        return Composite(comp_children, conjuction=conjunction)
+        return Composite(comp_children, conjunction=conjunction)
 
     def evaluate(self, payload, verbose=True):
         """Evaluate payload data against engine logical composite
@@ -221,8 +247,27 @@ class JSONEvaluationEngine():
         Returns:
             result (bool): result of logical evaluation of engine against payload
         """
+        if not self.prebuilt_:
+            raise AttributeError('Engine is not prebuilt. Prebuild engine or use dynamic_evaluate().')
 
         return self.composite_.evaluate(payload, verbose=verbose)
+
+    def dynamic_evaluate(self, payload, json_path, verbose=True):
+        """Builds the logical composite on the fly from JSON, then evaluates against payload
+        
+        Args:
+            payload(dict): dictionary of data to be evaluated.
+            verbose (bool): whether to print intermediate steps of build and evaluation
+            
+        Returns: 
+            result (bool): result of logical evaluation of engine against payload
+            
+        """
+
+        composite_ = self.build_engine_from_json(json_path=json_path, verbose=verbose)
+
+        return composite_.evaluate(payload, verbose=verbose)
+
 
     #def pretty_print(self):
     #    pass
