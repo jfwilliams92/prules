@@ -2,6 +2,12 @@ import operator
 import json
 from .operators import between, not_between, not_contains, in_, not_in, re_contains
 
+
+#TODO operators as constants 
+#TODO date comparison/validation
+#TODO JSON as an object, not file path
+#TODOValidate JSON Schema/structure
+
 class Evaluation():
     """The simplest logical unit in an evaluation.
 
@@ -85,7 +91,7 @@ class Composite():
             raise ValueError(f"conjunction must be a valid value. '{conjunction}' is not valid. Valid conjunctions are: {valid_conjunctions}.")
 
         if not isinstance(children, list):
-            raise ValueError('Children must be a list, empty or otherwise.')
+            raise TypeError('Children must be a list, empty or otherwise.')
         
         self.conjunction_ = conjunction
         self.children_ = children
@@ -177,7 +183,7 @@ class Composite():
             child.pretty_print(level + 1)
 
 
-class JSONEvaluationEngine():
+class JsonEvaluationEngine():
     """Engine builds the logical components from a properly formatted
         JSON backend.
         evaluate() method is implemented for prebuilt engines, and 
@@ -252,7 +258,7 @@ class JSONEvaluationEngine():
             else:
                 new_children = child.get('children')
                 conj = child.get('conjunction')
-                comp_children.append(self.build_engine(new_children, conjunction=conj))
+                comp_children.append(self.build_engine(new_children, conjunction=conj, verbose=verbose))
     
         return Composite(comp_children, conjunction=conjunction)
 
