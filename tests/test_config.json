@@ -17,8 +17,8 @@
         },
         {
             "field": "RecallDate",
-            "value": "NULL",
-            "operator": "eq"
+            "value": "2020-06-20",
+            "operator": "gt"
         },
         {
             "field": "DaysTillPayDay",

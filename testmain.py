@@ -1,9 +1,10 @@
 # run interactively
 
-from pystrategy import *
-import json 
+
 
 def main():
+    from pystrategy import *
+    import json 
     json_path = "./tests/test_config.json"
     with open(json_path) as f:
         json1 = json.load(f)
@@ -11,13 +12,13 @@ def main():
     eng = JsonEvaluationEngine(json1)
 
     payload_test = {
-    "RecallDate": "NULL",
-    "DaysSincePlacement": 75,
-    "MoneyInTheBank": 509.0,
-    "DaysTillPayDay": 22,
-    "OffersSent": ["PayDaySpecial", "AARP Discount"],
-    "DaysBeforeBirthday": 10,
-    "TimeSinceLastDiscountOffer": 23
+        "RecallDate": "1/20/2022",
+        "DaysSincePlacement": 75,
+        "MoneyInTheBank": 509.0,
+        "DaysTillPayDay": 22,
+        "OffersSent": ["PayDaySpecial", "AARP Discount"],
+        "DaysBeforeBirthday": 10,
+        "TimeSinceLastDiscountOffer": 23
     }
 
     eng.evaluate(payload_test)

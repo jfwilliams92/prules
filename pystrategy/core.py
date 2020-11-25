@@ -1,6 +1,7 @@
 import operator
 import json
 from .operators import between, not_between, not_contains, in_, not_in, re_contains
+from .utils import detect_date
 
 OPERATORS = {
     "lt": operator.lt,
@@ -38,8 +39,15 @@ class Evaluation():
 
         self.func_ = OPERATORS[operator_str] # functions are first class objects and can be passed around
         self.field_ = field
-        self.value_ = value
         self.op_str_ = operator_str
+
+        is_date, datetime_value = detect_date(value)
+        if is_date:
+            self.value_ = datetime_value
+            self.date_field = True
+        else:
+            self.date_field = False
+            self.value_ = value
 
     def evaluate(self, payload, level=0, verbose=True):
         """Evaluate a payload against this Evaluation.
@@ -56,6 +64,12 @@ class Evaluation():
         field_value_ = payload.get(self.field_)
         if not field_value_:
             raise ValueError(f"Required field '{self.field_}' not in payload.")
+
+        if self.date_field:
+            is_date, datetime_value = detect_date(field_value_)
+            if not is_date:
+                raise ValueError("Datetime value expected for this comparison.")
+            field_value_ = datetime_value
         
         if verbose:
             tabs = "\t" * level
