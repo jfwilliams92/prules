@@ -1,3 +1,3 @@
 # hoist into package namespace
-from .core import Composite, Evaluation, JSONEvaluationEngine
+from .core import Composite, Evaluation, JsonEvaluationEngine
 from .operators import *
