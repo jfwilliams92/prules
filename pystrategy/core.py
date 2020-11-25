@@ -2,11 +2,24 @@ import operator
 import json
 from .operators import between, not_between, not_contains, in_, not_in, re_contains
 
+OPERATORS = {
+    "lt": operator.lt,
+    "le": operator.le,
+    "eq": operator.eq,
+    "ne": operator.ne,
+    "ge": operator.ge,
+    "gt": operator.gt,
+    "contains": operator.contains,
+    "not contains": not_contains,
+    "in": in_,
+    "not in": not_in,
+    "regex match": re_contains,
+    "between": between,
+    "not between": not_between
+}
 
-#TODO operators as constants 
 #TODO date comparison/validation
-#TODO JSON as an object, not file path
-#TODOValidate JSON Schema/structure
+#TODO Validate JSON Schema/structure
 
 class Evaluation():
     """The simplest logical unit in an evaluation.
@@ -20,26 +33,10 @@ class Evaluation():
 
     def __init__(self, field, value, operator_str):
 
-        operators = {
-            "lt": operator.lt,
-            "le": operator.le,
-            "eq": operator.eq,
-            "ne": operator.ne,
-            "ge": operator.ge,
-            "gt": operator.gt,
-            "contains": operator.contains,
-            "not contains": not_contains,
-            "in": in_,
-            "not in": not_in,
-            "regex match": re_contains,
-            "between": between,
-            "not between": not_between
-        }
-
-        if operator_str not in operators.keys():
+        if operator_str not in OPERATORS.keys():
             raise ValueError(f"Operator must be a valid value. '{operator_str}' is not valid. Valid operators are: {list(operators.keys())}")
 
-        self.func_ = operators[operator_str] # functions are first class objects and can be passed around
+        self.func_ = OPERATORS[operator_str] # functions are first class objects and can be passed around
         self.field_ = field
         self.value_ = value
         self.op_str_ = operator_str
@@ -80,8 +77,8 @@ class Composite():
     or Evaluations.
 
     Attributes:
-        conjunction_ (str): Logical AND or OR or NOR or XOR or NAND
         children_ (list): list of logical children
+        conjunction_ (str): Logical AND or OR or NOR or XOR or NAND
     """
 
     def __init__(self, children, conjunction='AND'):
@@ -196,7 +193,7 @@ class JsonEvaluationEngine():
     
     """
 
-    def __init__(self, json_path=None, verbose=True):
+    def __init__(self, json=None, verbose=True):
         """Initializes the engine instance. Engine can be prebuilt, offering evaluation
         based on a particular JSON backend, or can be dynamic, building new logical components
         with each call.
@@ -210,29 +207,26 @@ class JsonEvaluationEngine():
             None
         """
 
-        if json_path:
-            self.composite_ = self.build_engine_from_json(json_path=json_path, verbose=verbose)
+        self.verbose = verbose
+        if json:
+            self.composite_ = self.build_engine_from_json(json=json, verbose=verbose)
             self.prebuilt_ = True
         else:
             self.prebuilt_ = False
 
-    def build_engine_from_json(self, json_path, verbose=True):
+    def build_engine_from_json(self, json, verbose=True):
         """Constructs the logical components of the engine from JSON file
 
         Args:
-            json_path (str): path to JSON backend
+            json (str): JSON rules configuration
             verbose (bool): whether to print intermediate steps of composite build.
         
         Returns:
             None
         """
-        # TODO JSON schema validation 
 
-        with open(json_path) as f:
-            json_ = json.load(f)
-
-        first_children = json_['children']
-        first_conj = json_['conjunction']
+        first_children = json['children']
+        first_conj = json['conjunction']
 
         composite_ = self.build_engine(children=first_children, conjunction=first_conj, verbose=verbose)
 
@@ -289,10 +283,10 @@ class JsonEvaluationEngine():
             
         """
 
-        composite_ = self.build_engine_from_json(json_path=json_path, verbose=verbose)
+        composite_ = self.build_engine_from_json(json=json, verbose=verbose)
 
         return composite_.evaluate(payload, verbose=verbose)
 
     def pretty_print(self):
-        print("JSON Evaluation Engine Logical Components: \n")
+        print("Json Evaluation Engine Logical Components: \n")
         self.composite_.pretty_print()
