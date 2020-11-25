@@ -72,7 +72,7 @@ class Evaluation():
 
     def pretty_print(self, level=0):
         tabs = "\t" * level
-        print(tabs + f"{self.field_}: Payload Value {self.op_str_} {self.value_}")
+        print(tabs + f"{self.field_}: PayloadValue {self.op_str_} {self.value_}")
 
 class Composite():
     """A logical composite made of children evaluations joined by logical

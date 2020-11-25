@@ -77,3 +77,53 @@ Evaluating Child 5, Level 1 - Composite
 Composite Result: False
 False
 ```
+
+You can see the logical components that make up the evaluation engine.
+```
+eng.pretty_print()
+```
+
+Output:
+```
+JSON Evaluation Engine Logical Components: 
+
+Child 1, Level 1 - Composite
+	Child 1, Level 2 - Evaluation
+		DaysSincePlacement: PayloadValue le 31
+
+	OR 
+
+	Child 2, Level 2 - Evaluation
+		MoneyInTheBank: PayloadValue ge 500.0
+
+AND 
+
+Child 2, Level 1 - Evaluation
+	RecallDate: PayloadValue eq NULL
+
+AND 
+
+Child 3, Level 1 - Evaluation
+	DaysTillPayDay: PayloadValue between [21, 55]
+
+AND 
+
+Child 4, Level 1 - Evaluation
+	OffersSent: PayloadValue not contains 10 OFF
+
+AND 
+
+Child 5, Level 1 - Composite
+	Child 1, Level 2 - Evaluation
+		DaysBeforeBirthday: PayloadValue in [1, 2, 6, 9, 22]
+
+	XOR 
+
+	Child 2, Level 2 - Evaluation
+		TimeSinceLastDiscountOffer: PayloadValue not in [1, 2, 3, 4, 5]
+
+	XOR 
+
+	Child 3, Level 2 - Evaluation
+		DaysSincePlacement: PayloadValue between [12, 78]
+```
