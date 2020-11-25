@@ -35,7 +35,7 @@ class Evaluation():
     def __init__(self, field, value, operator_str):
 
         if operator_str not in OPERATORS.keys():
-            raise ValueError(f"Operator must be a valid value. '{operator_str}' is not valid. Valid operators are: {list(operators.keys())}")
+            raise ValueError(f"Operator must be a valid value. '{operator_str}' is not valid. Valid operators are: {list(OPERATORS.keys())}")
 
         self.func_ = OPERATORS[operator_str] # functions are first class objects and can be passed around
         self.field_ = field
