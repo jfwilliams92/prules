@@ -1,0 +1,11 @@
+{
+    "children": [
+        {
+            "field": "DaysSincePlacement",
+            "value": 100,
+            "operator": "gg"
+        }
+
+    ],
+    "conjunction": "AND"
+}
