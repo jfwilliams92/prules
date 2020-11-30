@@ -1,7 +1,5 @@
 # run interactively
 
-
-
 def main():
     from pystrategy import *
     import json 
@@ -18,10 +16,14 @@ def main():
         "DaysTillPayDay": 22,
         "OffersSent": ["PayDaySpecial", "AARP Discount"],
         "DaysBeforeBirthday": 10,
-        "TimeSinceLastDiscountOffer": 23
+        "TimeSinceLastDiscountOffer": {
+            "OfferSent": "YahBoy",
+            "LastSent": "2020-01-02",
+            "DaysSince": 200
+        }
     }
 
-    eng.evaluate(payload_test)
+    rez = eng.evaluate(payload_test)
 
     # should fail due to invalid operator
     json_path2 = "./tests/test_config2.json"
