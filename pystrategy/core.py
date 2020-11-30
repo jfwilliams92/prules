@@ -1,7 +1,7 @@
 import operator
 import json
 from .operators import between, not_between, not_contains, in_, not_in, re_contains
-from .utils import detect_date
+from .utils import parse_date, detect_date_field, pluck
 
 OPERATORS = {
     "lt": operator.lt,
@@ -19,7 +19,6 @@ OPERATORS = {
     "not between": not_between
 }
 
-#TODO date comparison/validation
 #TODO Validate JSON Schema/structure
 
 class Evaluation():
@@ -35,13 +34,13 @@ class Evaluation():
     def __init__(self, field, value, operator_str):
 
         if operator_str not in OPERATORS.keys():
-            raise ValueError(f"Operator must be a valid value. '{operator_str}' is not valid. Valid operators are: {list(OPERATORS.keys())}")
+            raise ValueError(f"Operator must be a valid value. '{operator_str}' is not valid. Valid operators are: {set(OPERATORS.keys())}")
 
-        self.func_ = OPERATORS[operator_str] # functions are first class objects and can be passed around
+        self.func_ = OPERATORS[operator_str]
         self.field_ = field
         self.op_str_ = operator_str
 
-        is_date, datetime_value = detect_date(value)
+        is_date, datetime_value = detect_date_field(value)
         if is_date:
             self.value_ = datetime_value
             self.date_field = True
@@ -61,12 +60,12 @@ class Evaluation():
             result (bool): T/F of evaluation
         """
         # find the value to compare in the payload dict
-        field_value_ = payload.get(self.field_)
+        field_value_ = pluck(payload, self.field_)
         if not field_value_:
             raise ValueError(f"Required field '{self.field_}' not in payload.")
 
         if self.date_field:
-            is_date, datetime_value = detect_date(field_value_)
+            is_date, datetime_value = detect_date_field(field_value_)
             if not is_date:
                 raise ValueError("Datetime value expected for this comparison.")
             field_value_ = datetime_value
@@ -97,7 +96,7 @@ class Composite():
 
     def __init__(self, children, conjunction='AND'):
         
-        valid_conjunctions = ['AND', 'OR', 'NOR', 'XOR', 'NAND']
+        valid_conjunctions = {'AND', 'OR', 'NOR', 'XOR', 'NAND'}
         if conjunction not in valid_conjunctions:
             raise ValueError(f"conjunction must be a valid value. '{conjunction}' is not valid. Valid conjunctions are: {valid_conjunctions}.")
 
