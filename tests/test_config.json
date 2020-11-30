@@ -38,7 +38,7 @@
                     "operator": "in"
                 },
                 {
-                    "field": "TimeSinceLastDiscountOffer",
+                    "field": "TimeSinceLastDiscountOffer.DaysSince",
                     "value": [1, 2, 3, 4, 5],
                     "operator": "not in"
                 },
